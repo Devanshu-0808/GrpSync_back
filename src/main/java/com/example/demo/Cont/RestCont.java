@@ -8,7 +8,6 @@ import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,8 +30,7 @@ public class RestCont {
     @Autowired
     ConnectivityDB d1;
 
-    @Autowired
-    PasswordEncoder pk;
+    
 
     @Autowired
     data1 d;
@@ -48,21 +46,26 @@ public class RestCont {
         }
        
         p.setUsername(d.getEmail());
-        p.setPassword(pk.encode(d.getPassword()));
+        p.setPassword(d.getPassword());
         p.setRole("User");
         d1.save(p);
         return "Registered Sucessfully";
     }
 
-    @RequestMapping("dashboard")
-    public String dash() { 
-        return "Dashboard";
+    @RequestMapping("/login")
+    public String login(@RequestBody Map<String, String> param) { 
+         pojo p = d1.findByUsername(param.get("username"));
+            if (p == null) {
+                return "User not found";
+            }
+            if (p.getPassword().equals(param.get("password"))) {
+                return "Login Sucessful";
+            }
+            return "Password Incorrect";
+      
     }
 
-    @RequestMapping("/failure")
-    public String fail() {
-        return "Failure";
-    }  
+   
 
     @PostMapping("/getdata")
     @ResponseBody
