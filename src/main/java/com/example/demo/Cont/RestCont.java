@@ -55,6 +55,7 @@ public class RestCont {
     @RequestMapping("/login")
     public String login(@RequestBody Map<String, String> param) { 
          pojo p = d1.findByUsername(param.get("username"));
+       
             if (p == null) {
                 return "User not found";
             }
