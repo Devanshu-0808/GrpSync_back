@@ -75,18 +75,14 @@ public class RestCont {
     @ResponseBody
     public data1 Webcrawl(@RequestBody YoutubeUrl youtubeUrl) throws IOException {
         String url = youtubeUrl.getYoutubeUrl();
-        try {
+       
             Document doc = Jsoup.connect(url).timeout(0).get();
           
             d.setTitle(doc.title());
             d.setUrl(url);
             d.setName(doc.select("link[itemprop=name]").attr("content"));
-        } catch (org.jsoup.HttpStatusException e) {
-            // Handle HTTP status exceptions
-            d.setTitle("Error");
-            d.setUrl(url);
-            d.setName("HTTP Status Error: " + e.getStatusCode());
-        }
+       
+        
         return d;
     }
    
