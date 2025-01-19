@@ -26,7 +26,7 @@ import com.example.demo.Repo.createRoomConnect;
 
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "https://grp-sync-front1.vercel.app")
 public class RestCont {
     
     @Autowired
@@ -55,6 +55,7 @@ public class RestCont {
     }
 
     @PostMapping("/login")
+    @ResponseBody
     public String login(@RequestBody Map<String, String> param) { 
          pojo p = d1.findByUsername(param.get("username"));
        
