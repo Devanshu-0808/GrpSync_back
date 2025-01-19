@@ -54,7 +54,7 @@ public class RestCont {
         return "Registered Sucessfully";
     }
 
-    @RequestMapping("/login")
+    @PostMapping("/login")
     public String login(@RequestBody Map<String, String> param) { 
          pojo p = d1.findByUsername(param.get("username"));
        
