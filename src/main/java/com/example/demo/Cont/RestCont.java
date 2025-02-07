@@ -6,6 +6,7 @@ import java.util.Map;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.example.demo.Model.CreateRoom;
 import com.example.demo.Model.EPpojo;
@@ -70,24 +72,19 @@ public class RestCont {
     }
 
    
-
+    private static final String OEMBED_URL = "https://www.youtube.com/oembed?url=";
     @PostMapping("/getdata")
     @ResponseBody
     public data1 Webcrawl(@RequestBody YoutubeUrl youtubeUrl) throws IOException {
         String url = youtubeUrl.getYoutubeUrl();
-       
-            Document doc = Jsoup
-            .connect(url)
-            .timeout(0)
-            .userAgent("Mozilla")
-            .ignoreContentType(true)
-            .referrer("https://www.google.com")
-            .followRedirects(true)
-            .get();
-          
-            d.setTitle(doc.title());
-            d.setUrl(url);
-            d.setName(doc.select("link[itemprop=name]").attr("content"));
+        String apiUrl = OEMBED_URL + url + "&format=json";
+           
+           RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<Map> response = restTemplate.getForEntity(apiUrl, Map.class);
+          Map<String , String>val=response.getBody();
+           d.setTitle( val.get("title"));
+           d.setUrl(url);
+           d.setName(val.get("author_name"));
        
         
         return d;
