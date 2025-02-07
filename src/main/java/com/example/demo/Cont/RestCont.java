@@ -3,8 +3,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -21,6 +25,8 @@ import com.example.demo.Model.pojo;
 import com.example.demo.Repo.ConnectivityDB;
 import com.example.demo.Repo.YoutubeUrl;
 import com.example.demo.Repo.createRoomConnect;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
 
 
 
@@ -72,27 +78,55 @@ public class RestCont {
 
     @PostMapping("/getdata")
     @ResponseBody
-    public data1 Webcrawl(@RequestBody YoutubeUrl youtubeUrl) throws IOException {
-        String url = youtubeUrl.getYoutubeUrl();
+    public data1 Webcrawl(@RequestBody YoutubeUrl youtubeUrl) {
+        WebDriverManager.chromedriver().setup();
+        
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        options.addArguments("--disable-gpu");
+        options.addArguments("--no-sandbox"); // Required for running in containers
+        options.addArguments("--disable-dev-shm-usage"); // Required for running in containers
+        options.addArguments("--window-size=1920,1080");
+        options.addArguments("--remote-allow-origins=*");
+        
+        WebDriver driver = null;
         try {
-            Document doc = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0")
-                .timeout(10*1000)
-                .get();
+            driver = new ChromeDriver(options);
+            String videoUrl = youtubeUrl.getYoutubeUrl();
+            driver.get(videoUrl);
             
-            d.setTitle(doc.title());
-            d.setUrl(url);
-            d.setName(doc.select("link[itemprop=name]").attr("content"));
+            // Add a small delay to allow dynamic content to load
+            Thread.sleep(2000);
+            
+            // Get the page title
+            String videoTitle = driver.getTitle();
+            WebElement channelElement = driver.findElement(By.cssSelector("yt-formatted-string.style-scope.ytd-channel-name"));
+            String channelName = channelElement.getText();
+            // Set the data
+            d.setTitle(videoTitle);
+            d.setUrl(videoUrl);
+            d.setName(channelName); // or extract channel name if needed
             
             return d;
-        } catch (IOException e) {
-            // Log the error details
-            System.err.println("Error fetching URL: " + url);
-            System.err.println("Error message: " + e.getMessage());
-            throw e;
+            
+        } catch (Exception e) {
+            System.err.println("Error during web scraping: " + e.getMessage());
+            e.printStackTrace();
+            // Return partial data if available
+            d.setUrl(youtubeUrl.getYoutubeUrl());
+            d.setTitle("Error fetching title");
+            d.setName("Error fetching name");
+            return d;
+        } finally {
+            if (driver != null) {
+                try {
+                    driver.quit();
+                } catch (Exception e) {
+                    System.err.println("Error closing driver: " + e.getMessage());
+                }
+            }
         }
     }
-   
 
    @Autowired
    createRoomConnect crc;

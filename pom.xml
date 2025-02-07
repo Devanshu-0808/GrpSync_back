@@ -32,12 +32,21 @@
 	</properties>
 	<dependencies>
 
-<dependency>
-  <!-- jsoup HTML parser library @ https://jsoup.org/ -->
-  <groupId>org.jsoup</groupId>
-  <artifactId>jsoup</artifactId>
-  <version>1.15.3</version>
-</dependency>
+
+    <!-- Selenium WebDriver -->
+    <dependency>
+        <groupId>org.seleniumhq.selenium</groupId>
+        <artifactId>selenium-java</artifactId>
+    </dependency>
+
+    <!-- WebDriver Manager (for auto ChromeDriver management) -->
+    <dependency>
+        <groupId>io.github.bonigarcia</groupId>
+        <artifactId>webdrivermanager</artifactId>
+        <version>5.6.2</version>
+    </dependency>
+
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
