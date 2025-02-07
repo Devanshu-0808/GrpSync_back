@@ -1,5 +1,17 @@
 # Stage 1: Build
-FROM maven:3.9.4-eclipse-temurin-21 AS builder
+FROM maven:3.8.5-openjdk-21 AS builder
+
+# Install Chrome and required dependencies
+RUN apt-get update && apt-get install -y \
+    chromium \
+    chromium-driver \
+    libgconf-2-4 \
+    xvfb \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set display port to avoid crash
+ENV DISPLAY=:99
+
 WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests

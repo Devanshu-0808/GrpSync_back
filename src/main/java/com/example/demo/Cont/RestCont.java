@@ -79,51 +79,54 @@ public class RestCont {
     @PostMapping("/getdata")
     @ResponseBody
     public data1 Webcrawl(@RequestBody YoutubeUrl youtubeUrl) {
-        WebDriverManager.chromedriver().setup();
-        
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless");
         options.addArguments("--disable-gpu");
-        options.addArguments("--no-sandbox"); // Required for running in containers
-        options.addArguments("--disable-dev-shm-usage"); // Required for running in containers
-        options.addArguments("--window-size=1920,1080");
-        options.addArguments("--remote-allow-origins=*");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-extensions");
+        options.addArguments("--disable-software-rasterizer");
+        options.setBinary("/usr/bin/chromium"); // Set Chrome binary path
+        options.addArguments("--remote-debugging-port=9222");
         
         WebDriver driver = null;
         try {
             driver = new ChromeDriver(options);
+            driver.manage().window().maximize();
             String videoUrl = youtubeUrl.getYoutubeUrl();
             driver.get(videoUrl);
             
-            // Add a small delay to allow dynamic content to load
-            Thread.sleep(2000);
+            // Increased wait time
+            Thread.sleep(5000);
             
             // Get the page title
             String videoTitle = driver.getTitle();
-            WebElement channelElement = driver.findElement(By.cssSelector("yt-formatted-string.style-scope.ytd-channel-name"));
-            String channelName = channelElement.getText();
-            // Set the data
+            
+            // More robust channel name extraction
+            String channelName;
+            try {
+                WebElement channelElement = driver.findElement(By.cssSelector("#owner #channel-name"));
+                channelName = channelElement.getText().trim();
+            } catch (Exception e) {
+                channelName = "Channel name not found";
+            }
+            
             d.setTitle(videoTitle);
             d.setUrl(videoUrl);
-            d.setName(channelName); // or extract channel name if needed
+            d.setName(channelName);
             
             return d;
             
         } catch (Exception e) {
             System.err.println("Error during web scraping: " + e.getMessage());
             e.printStackTrace();
-            // Return partial data if available
             d.setUrl(youtubeUrl.getYoutubeUrl());
             d.setTitle("Error fetching title");
             d.setName("Error fetching name");
             return d;
         } finally {
             if (driver != null) {
-                try {
-                    driver.quit();
-                } catch (Exception e) {
-                    System.err.println("Error closing driver: " + e.getMessage());
-                }
+                driver.quit();
             }
         }
     }
