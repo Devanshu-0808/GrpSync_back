@@ -11,7 +11,6 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -75,15 +74,25 @@ public class RestCont {
     @ResponseBody
     public data1 Webcrawl(@RequestBody YoutubeUrl youtubeUrl) throws IOException {
         String url = youtubeUrl.getYoutubeUrl();
-       
-            Document doc = Jsoup.connect(url).timeout(0).get();
-          
+        try {
+            Document doc = Jsoup.connect(url)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                .timeout(10000)
+                .followRedirects(true)
+                .ignoreHttpErrors(true)
+                .get();
+            
             d.setTitle(doc.title());
             d.setUrl(url);
             d.setName(doc.select("link[itemprop=name]").attr("content"));
-       
-        
-        return d;
+            
+            return d;
+        } catch (IOException e) {
+            // Log the error details
+            System.err.println("Error fetching URL: " + url);
+            System.err.println("Error message: " + e.getMessage());
+            throw e;
+        }
     }
    
 
