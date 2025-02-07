@@ -79,7 +79,7 @@ public class RestCont {
             Document doc = Jsoup
             .connect(url)
             .timeout(0)
-            .userAgent("WhatsApp/2.19.81 A")
+            .userAgent("Mozilla")
             .ignoreContentType(true)
             .referrer("https://www.google.com")
             .followRedirects(true)
