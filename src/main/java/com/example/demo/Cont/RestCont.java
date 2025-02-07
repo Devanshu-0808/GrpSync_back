@@ -3,18 +3,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
-
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,8 +22,6 @@ import com.example.demo.Model.pojo;
 import com.example.demo.Repo.ConnectivityDB;
 import com.example.demo.Repo.YoutubeUrl;
 import com.example.demo.Repo.createRoomConnect;
-
-import io.github.bonigarcia.wdm.WebDriverManager;
 
 
 
@@ -78,58 +73,26 @@ public class RestCont {
 
     @PostMapping("/getdata")
     @ResponseBody
-    public data1 Webcrawl(@RequestBody YoutubeUrl youtubeUrl) {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-extensions");
-        options.addArguments("--disable-software-rasterizer");
-        options.setBinary("/usr/bin/chromium"); // Set Chrome binary path
-        options.addArguments("--remote-debugging-port=9222");
+    public data1 Webcrawl(@RequestBody YoutubeUrl youtubeUrl) throws IOException {
+        String url = youtubeUrl.getYoutubeUrl();
+       
+            Document doc = Jsoup
+            .connect(url)
+            .timeout(0)
+            .userAgent("WhatsApp/2.19.81 A")
+            .ignoreContentType(true)
+            .referrer("https://www.google.com")
+            .followRedirects(true)
+            .get();
+          
+            d.setTitle(doc.title());
+            d.setUrl(url);
+            d.setName(doc.select("link[itemprop=name]").attr("content"));
+       
         
-        WebDriver driver = null;
-        try {
-            driver = new ChromeDriver(options);
-            driver.manage().window().maximize();
-            String videoUrl = youtubeUrl.getYoutubeUrl();
-            driver.get(videoUrl);
-            
-            // Increased wait time
-            Thread.sleep(5000);
-            
-            // Get the page title
-            String videoTitle = driver.getTitle();
-            
-            // More robust channel name extraction
-            String channelName;
-            try {
-                WebElement channelElement = driver.findElement(By.cssSelector("#owner #channel-name"));
-                channelName = channelElement.getText().trim();
-            } catch (Exception e) {
-                channelName = "Channel name not found";
-            }
-            
-            d.setTitle(videoTitle);
-            d.setUrl(videoUrl);
-            d.setName(channelName);
-            
-            return d;
-            
-        } catch (Exception e) {
-            System.err.println("Error during web scraping: " + e.getMessage());
-            e.printStackTrace();
-            d.setUrl(youtubeUrl.getYoutubeUrl());
-            d.setTitle("Error fetching title");
-            d.setName("Error fetching name");
-            return d;
-        } finally {
-            if (driver != null) {
-                driver.quit();
-            }
-        }
+        return d;
     }
+   
 
    @Autowired
    createRoomConnect crc;
