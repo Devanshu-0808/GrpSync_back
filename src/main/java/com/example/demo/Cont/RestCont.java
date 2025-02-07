@@ -76,10 +76,8 @@ public class RestCont {
         String url = youtubeUrl.getYoutubeUrl();
         try {
             Document doc = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-                .timeout(10000)
-                .followRedirects(true)
-                .ignoreHttpErrors(true)
+                .userAgent("Mozilla/5.0")
+                .timeout(10*1000)
                 .get();
             
             d.setTitle(doc.title());
